@@ -1,0 +1,17 @@
+{
+  "network": "testnet",
+  "horizonUrl": "https://horizon-testnet.stellar.org",
+  "sorobanRpcUrl": "https://soroban-testnet.stellar.org",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "batchSize": 100,
+  "pollingInterval": 5000,
+  "auditThresholds": {
+    "largeTransactionThreshold": 10000,
+    "rapidTransactionCount": 15,
+    "rapidTransactionWindow": 60000
+  },
+  "riskScoring": {
+    "maxRiskScore": 10,
+    "autoFlagThreshold": 6
+  }
+}

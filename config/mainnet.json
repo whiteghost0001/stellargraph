@@ -1,0 +1,17 @@
+{
+  "network": "mainnet",
+  "horizonUrl": "https://horizon.stellar.org",
+  "sorobanRpcUrl": "https://soroban-rpc.mainnet.stellar.gateway.fm",
+  "networkPassphrase": "Public Global Stellar Network ; September 2015",
+  "batchSize": 200,
+  "pollingInterval": 3000,
+  "auditThresholds": {
+    "largeTransactionThreshold": 50000,
+    "rapidTransactionCount": 20,
+    "rapidTransactionWindow": 60000
+  },
+  "riskScoring": {
+    "maxRiskScore": 10,
+    "autoFlagThreshold": 7
+  }
+}

@@ -1,0 +1,185 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model FinancialTransaction {
+  id                String   @id @default(cuid())
+  transactionHash   String   @unique
+  ledgerSequence    BigInt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Transaction Details
+  sourceAccount     String
+  destinationAccount String?
+  assetCode         String
+  assetIssuer       String?
+  amount            String   // Using String to handle large numbers precisely
+  fee               String
+  
+  // Transaction Type
+  operationType     TransactionType
+  
+  // Soroban Contract Details (if applicable)
+  contractId        String?
+  contractFunction  String?
+  contractEvents    Json?
+  
+  // Audit Trail
+  auditLogs         AuditLog[]
+  
+  // Indexing metadata
+  blockTimestamp    DateTime
+  processed         Boolean  @default(false)
+  
+  @@index([ledgerSequence])
+  @@index([sourceAccount])
+  @@index([destinationAccount])
+  @@index([assetCode, assetIssuer])
+  @@index([operationType])
+  @@index([contractId])
+  @@index([blockTimestamp])
+}
+
+model AuditLog {
+  id                    String   @id @default(cuid())
+  createdAt             DateTime @default(now())
+  
+  // Reference to transaction
+  transactionId         String
+  transaction           FinancialTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  
+  // Audit Details
+  auditType             AuditType
+  severity              AuditSeverity
+  description           String
+  metadata              Json?
+  
+  // Risk Assessment
+  riskScore             Float?
+  flagged               Boolean  @default(false)
+  
+  // Investigation
+  investigated          Boolean  @default(false)
+  investigatedBy        String?
+  investigatedAt        DateTime?
+  resolution            String?
+  
+  @@index([auditType])
+  @@index([severity])
+  @@index([flagged])
+  @@index([investigated])
+}
+
+model LiquidityPoolSwap {
+  id                String   @id @default(cuid())
+  transactionHash   String
+  ledgerSequence    BigInt
+  createdAt         DateTime @default(now())
+  
+  // Pool Details
+  poolId            String
+  assetACode        String
+  assetAIssuer      String?
+  assetBCode        String
+  assetBIssuer      String?
+  
+  // Swap Details
+  amountIn          String
+  amountOut         String
+  assetIn           String
+  assetOut          String
+  
+  // Pricing
+  priceImpact       Float?
+  exchangeRate      Float?
+  
+  // User
+  swapper           String
+  
+  blockTimestamp    DateTime
+  
+  @@index([poolId])
+  @@index([swapper])
+  @@index([ledgerSequence])
+  @@index([blockTimestamp])
+}
+
+model ContractEvent {
+  id                String   @id @default(cuid())
+  transactionHash   String
+  ledgerSequence    BigInt
+  createdAt         DateTime @default(now())
+  
+  // Contract Details
+  contractId        String
+  eventType         String
+  eventData         Json
+  
+  // Event Context
+  caller            String?
+  blockTimestamp    DateTime
+  
+  // Processing
+  processed         Boolean  @default(false)
+  
+  @@index([contractId])
+  @@index([eventType])
+  @@index([caller])
+  @@index([ledgerSequence])
+  @@index([blockTimestamp])
+}
+
+model IndexingCursor {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  lastProcessedLedger BigInt
+  updatedAt         DateTime @updatedAt
+  
+  @@index([name])
+}
+
+enum TransactionType {
+  PAYMENT
+  PATH_PAYMENT_STRICT_RECEIVE
+  PATH_PAYMENT_STRICT_SEND
+  CREATE_ACCOUNT
+  ACCOUNT_MERGE
+  MANAGE_OFFER
+  CREATE_PASSIVE_SELL_OFFER
+  SET_OPTIONS
+  CHANGE_TRUST
+  ALLOW_TRUST
+  MANAGE_DATA
+  BUMP_SEQUENCE
+  MANAGE_BUY_OFFER
+  INVOKE_HOST_FUNCTION
+  EXTEND_FOOTPRINT_TTL
+  RESTORE_FOOTPRINT
+}
+
+enum AuditType {
+  LARGE_TRANSACTION
+  SUSPICIOUS_PATTERN
+  RAPID_TRANSACTIONS
+  CROSS_BORDER_TRANSFER
+  HIGH_RISK_ACCOUNT
+  UNUSUAL_ASSET
+  CONTRACT_INTERACTION
+  LIQUIDITY_MANIPULATION
+}
+
+enum AuditSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
